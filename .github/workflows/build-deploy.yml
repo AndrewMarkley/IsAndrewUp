@@ -56,13 +56,12 @@ jobs:
         name: production-files
         path: ./web/build
 
-    - name: Deploy to gh-pages
-      uses: JamesIves/github-pages-deploy-action@v4
+    - name: deploy to gh-pages
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        folder: ./web/build
-        branch: gh-pages
-        git-config-name: AndrewMarkley
-        clean: true
-        single-commit: true
-        
+          deploy_key: ${{ secrets.deploy-key  }}
+          publish_dir: ./web/build
+          keep_files: false
+          publish_branch: gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
