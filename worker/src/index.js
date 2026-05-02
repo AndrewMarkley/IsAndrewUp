@@ -50,14 +50,21 @@ export default {
       const isUp = body.isAndrewUp;
 
       let awakeSince = prev?.awakeSince ?? null;
-      if (!isUp) awakeSince = null;
-      else if (!wasUp || !awakeSince) awakeSince = now;
+      let asleepSince = prev?.asleepSince ?? null;
+      if (isUp) {
+        asleepSince = null;
+        if (!wasUp || !awakeSince) awakeSince = now;
+      } else {
+        awakeSince = null;
+        if (wasUp || !asleepSince) asleepSince = now;
+      }
 
       const payload = {
         isAndrewUp: isUp,
         signals: body.signals ?? {},
         updatedAt: now,
         awakeSince,
+        asleepSince,
       };
 
       await env.STATE.put(STATUS_KEY, JSON.stringify(payload));

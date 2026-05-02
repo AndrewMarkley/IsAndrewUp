@@ -5,9 +5,9 @@ const STATUS_URL = 'https://isandrewup.ajm501028.workers.dev/status';
 const POLL_MS = 60_000;
 const STALE_MS = 15 * 60_000;
 
-function formatAwakeFor(awakeSince) {
-  if (!awakeSince) return null;
-  const ms = Date.now() - new Date(awakeSince).getTime();
+function formatDuration(since) {
+  if (!since) return null;
+  const ms = Date.now() - new Date(since).getTime();
   if (ms < 60_000) return null;
   const totalMinutes = Math.floor(ms / 60_000);
   const hours = Math.floor(totalMinutes / 60);
@@ -91,10 +91,11 @@ export default function App() {
     answer = status.isAndrewUp ? 'Yes.' : 'No.';
   }
 
-  const awakeFor = !isStale && status?.isAndrewUp ? formatAwakeFor(status?.awakeSince) : null;
+  const awakeFor = !isStale && status?.isAndrewUp === true ? formatDuration(status?.awakeSince) : null;
+  const asleepFor = !isStale && status?.isAndrewUp === false ? formatDuration(status?.asleepSince) : null;
   const battery = !isStale ? formatBattery(status?.signals) : null;
   const nextAlarm = !isStale ? formatNextAlarm(status?.signals?.nextAlarm) : null;
-  const hasDetails = awakeFor || battery || nextAlarm;
+  const hasDetails = awakeFor || asleepFor || battery || nextAlarm;
 
   return (
     <div className="App">
@@ -104,6 +105,7 @@ export default function App() {
         {hasDetails && (
           <div className="details">
             {awakeFor && <div>Awake for {awakeFor}</div>}
+            {asleepFor && <div>Asleep for {asleepFor}</div>}
             {battery && <div>Battery: {battery}</div>}
             {nextAlarm && <div>Next alarm: {nextAlarm}</div>}
           </div>
