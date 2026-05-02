@@ -43,10 +43,21 @@ export default {
         return json({ error: 'isAndrewUp must be boolean' }, { status: 400 });
       }
 
+      const now = new Date().toISOString();
+      const stored = await env.STATE.get(STATUS_KEY);
+      const prev = stored ? JSON.parse(stored) : null;
+      const wasUp = prev?.isAndrewUp === true;
+      const isUp = body.isAndrewUp;
+
+      let awakeSince = prev?.awakeSince ?? null;
+      if (!isUp) awakeSince = null;
+      else if (!wasUp || !awakeSince) awakeSince = now;
+
       const payload = {
-        isAndrewUp: body.isAndrewUp,
+        isAndrewUp: isUp,
         signals: body.signals ?? {},
-        updatedAt: new Date().toISOString(),
+        updatedAt: now,
+        awakeSince,
       };
 
       await env.STATE.put(STATUS_KEY, JSON.stringify(payload));
