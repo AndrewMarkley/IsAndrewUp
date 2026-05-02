@@ -94,7 +94,7 @@ export default function App() {
   const awakeFor = !isStale && status?.isAndrewUp === true ? formatDuration(status?.awakeSince) : null;
   const asleepFor = !isStale && status?.isAndrewUp === false ? formatDuration(status?.asleepSince) : null;
   const battery = !isStale ? formatBattery(status?.signals) : null;
-  const nextAlarm = !isStale ? formatNextAlarm(status?.signals?.nextAlarm) : null;
+  const nextAlarm = !isStale && status?.isAndrewUp === false ? formatNextAlarm(status?.signals?.nextAlarm) : null;
   const hasDetails = awakeFor || asleepFor || battery || nextAlarm;
 
   return (
