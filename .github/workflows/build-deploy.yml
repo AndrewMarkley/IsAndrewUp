@@ -8,57 +8,40 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
-  build:
-    name: Build
+  build-and-deploy:
+    name: Build & deploy
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./web
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Install Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: 13.x
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+          cache-dependency-path: web/yarn.lock
 
-    - name: Install NPM packages
-      run: npm i
+      - name: Install
+        run: yarn install --frozen-lockfile
 
-    - name: Build project
-      working-directory: ./web
-      run: npm run build
+      - name: Build
+        run: yarn build
+        env:
+          CI: false
 
-    - name: Upload production-ready build files
-      uses: actions/upload-artifact@v2
-      with:
-        name: production-files
-        path: ./web/build
-
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Download artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: production-files
-        path: ./web/build
-
-    - name: deploy to gh-pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./web/build
           keep_files: false

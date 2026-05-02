@@ -1,38 +1,29 @@
 import React, {useEffect, useState} from 'react';
 import './App.css';
 
+const STATUS_URL = 'https://isandrewup.ajm501028.workers.dev/status';
+const POLL_MS = 60_000;
+const STALE_MS = 15 * 60_000;
+
 export default function App() {
-  const [isAndrewUp, setIsAndrewUp] = useState(false);
+  const [status, setStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [timeLastFetched, setTimeLastFetched] = useState(undefined);
 
   useEffect(() => {
-    async function fetchAndSetWakeStatus() {
-      let url = 'https://firebasestorage.googleapis.com/v0/b/isandrewup.appspot.com/o/data.json?alt=media';
-
-      setIsLoading(true);
-
-      const result = await fetch(url);
-
+    async function fetchStatus() {
       try {
-        const jsonResult = await result.json();
-
-        setIsAndrewUp((jsonResult && jsonResult.isAndrewUp) || false);
+        const res = await fetch(STATUS_URL, { cache: 'no-store' });
+        const data = await res.json();
+        setStatus(data);
       } catch (ex) {
-        // defaults to me being asleep if something goes wrong
-        setIsAndrewUp(false);
-
-        console.error('call to firebase failed', ex);
+        console.error('failed to fetch status', ex);
+        setStatus({ isAndrewUp: null, signals: {}, updatedAt: null });
       }
-
       setIsLoading(false);
-      setTimeLastFetched(new Date());
-    };
+    }
 
-    fetchAndSetWakeStatus();
-
-    const interval = setInterval(() => fetchAndSetWakeStatus(), 300000);
-
+    fetchStatus();
+    const interval = setInterval(fetchStatus, POLL_MS);
     return () => clearInterval(interval);
   }, []);
 
@@ -47,17 +38,24 @@ export default function App() {
     );
   }
 
-  let lastFetched = timeLastFetched;
-  if (lastFetched === undefined) {
-    lastFetched = new Date();
+  const updatedAt = status?.updatedAt ? new Date(status.updatedAt) : null;
+  const isStale = !updatedAt || (Date.now() - updatedAt.getTime()) > STALE_MS;
+
+  let answer;
+  if (isStale || status?.isAndrewUp === null || status?.isAndrewUp === undefined) {
+    answer = '¯\\_(ツ)_/¯';
+  } else {
+    answer = status.isAndrewUp ? 'Yes.' : 'No.';
   }
 
   return (
     <div className="App">
       <header className="App-header">
         <h1>Is Andrew Up?</h1>
-        <h2>{isAndrewUp ? 'Yes.' : 'No.'}</h2>
-        <span style={{ fontSize: '10px' }}>Last Fetched: {lastFetched.toLocaleString()}</span>
+        <h2>{answer}</h2>
+        <span style={{ fontSize: '10px' }}>
+          {updatedAt ? `Last Updated: ${updatedAt.toLocaleString()}` : 'No data yet'}
+        </span>
       </header>
     </div>
   );

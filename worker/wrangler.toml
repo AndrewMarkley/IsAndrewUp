@@ -1,0 +1,8 @@
+name = "isandrewup"
+main = "src/index.js"
+compatibility_date = "2026-05-01"
+account_id = "93161b2846b16df6738ce95c06be0c98"
+
+[[kv_namespaces]]
+binding = "STATE"
+id = "2d213c9de48947a7857843ea32b483ff"

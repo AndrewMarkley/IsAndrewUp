@@ -1,0 +1,9 @@
+{
+  "name": "isandrewup-worker",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  }
+}
